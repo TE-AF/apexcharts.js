@@ -1884,6 +1884,14 @@
       value: function setAttrs(el, attrs) {
         for (var key in attrs) {
           if (attrs.hasOwnProperty(key)) {
+            var attr = attrs[key];
+
+            if (key === 'length' && attr === 'NaN') {
+              attr = 0;
+            } else if (key === 'd' && attr.indexOf('NaN') !== -1) {
+              attr = attr.replace("NaN", 0);
+            }
+
             el.setAttribute(key, attrs[key]);
           }
         }
