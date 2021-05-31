@@ -45,7 +45,7 @@ export default class UpdateHelpers {
         w.globals.resized = true
         w.globals.dataChanged = true
 
-        if (animate) {
+        if (animate && ch.series) {
           ch.series.getPreviousPaths()
         }
       }
@@ -89,7 +89,7 @@ export default class UpdateHelpers {
 
     w.globals.dataChanged = true
 
-    if (animate) {
+    if (animate && this.ctx.series) {
       this.ctx.series.getPreviousPaths()
     }
 

@@ -9,6 +9,44 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.ApexCharts = factory());
 }(this, (function () { 'use strict';
 
+  function ownKeys(object, enumerableOnly) {
+    var keys = Object.keys(object);
+
+    if (Object.getOwnPropertySymbols) {
+      var symbols = Object.getOwnPropertySymbols(object);
+
+      if (enumerableOnly) {
+        symbols = symbols.filter(function (sym) {
+          return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+        });
+      }
+
+      keys.push.apply(keys, symbols);
+    }
+
+    return keys;
+  }
+
+  function _objectSpread2(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i] != null ? arguments[i] : {};
+
+      if (i % 2) {
+        ownKeys(Object(source), true).forEach(function (key) {
+          _defineProperty(target, key, source[key]);
+        });
+      } else if (Object.getOwnPropertyDescriptors) {
+        Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+      } else {
+        ownKeys(Object(source)).forEach(function (key) {
+          Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+        });
+      }
+    }
+
+    return target;
+  }
+
   function _typeof(obj) {
     "@babel/helpers - typeof";
 
@@ -62,40 +100,6 @@
     return obj;
   }
 
-  function ownKeys(object, enumerableOnly) {
-    var keys = Object.keys(object);
-
-    if (Object.getOwnPropertySymbols) {
-      var symbols = Object.getOwnPropertySymbols(object);
-      if (enumerableOnly) symbols = symbols.filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-      });
-      keys.push.apply(keys, symbols);
-    }
-
-    return keys;
-  }
-
-  function _objectSpread2(target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i] != null ? arguments[i] : {};
-
-      if (i % 2) {
-        ownKeys(Object(source), true).forEach(function (key) {
-          _defineProperty(target, key, source[key]);
-        });
-      } else if (Object.getOwnPropertyDescriptors) {
-        Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-      } else {
-        ownKeys(Object(source)).forEach(function (key) {
-          Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-        });
-      }
-    }
-
-    return target;
-  }
-
   function _inherits(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
@@ -133,7 +137,7 @@
     if (typeof Proxy === "function") return true;
 
     try {
-      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+      Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
       return true;
     } catch (e) {
       return false;
@@ -184,7 +188,7 @@
   }
 
   function _iterableToArray(iter) {
-    if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
+    if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
   }
 
   function _unsupportedIterableToArray(o, minLen) {
@@ -2141,14 +2145,14 @@
 
     _createClass(CoreUtils, [{
       key: "getStackedSeriesTotals",
-
+      value:
       /**
        * @memberof CoreUtils
        * returns the sum of all individual values in a multiple stacked series
        * Eg. w.globals.series = [[32,33,43,12], [2,3,5,1]]
        *  @return [34,36,48,13]
        **/
-      value: function getStackedSeriesTotals() {
+      function getStackedSeriesTotals() {
         var w = this.w;
         var total = [];
         if (w.globals.series.length === 0) return total;
@@ -10558,7 +10562,7 @@
             });
             elYaxisTexts.add(elLabel);
             var elTooltipTitle = document.createElementNS(w.globals.SVGNS, 'title');
-            elTooltipTitle.textContent = label.text;
+            elTooltipTitle.textContent = Array.isArray(label) ? label.join(' ') : label;
             elLabel.node.appendChild(elTooltipTitle);
 
             if (w.config.yaxis[realIndex].labels.rotate !== 0) {
@@ -12337,6 +12341,9 @@
             }
 
             elYaxisTexts.add(label);
+            var elTooltipTitle = document.createElementNS(w.globals.SVGNS, 'title');
+            elTooltipTitle.textContent = Array.isArray(val) ? val.join(' ') : val;
+            label.node.appendChild(elTooltipTitle);
 
             if (w.config.yaxis[realIndex].labels.rotate !== 0) {
               var firstabelRotatingCenter = graphics.rotateAroundCenter(firstLabel.node);
@@ -13699,6 +13706,8 @@
         var axesUtils = new AxesUtils(this.dCtx.ctx);
         w.config.yaxis.map(function (yaxe, index) {
           var yS = w.globals.yAxisScale[index];
+          var yAxisMinWidth = 0;
+          if (!axesUtils.isYAxisHidden(index) && yaxe.labels.show && yaxe.labels.minWidth != undefined) yAxisMinWidth = yaxe.labels.minWidth;
 
           if (!axesUtils.isYAxisHidden(index) && yaxe.labels.show && yS.result.length) {
             var lbFormatter = w.globals.yLabelFormatters[index];
@@ -13739,7 +13748,7 @@
             }
 
             ret.push({
-              width: (arrLabelrect.width > rect.width ? arrLabelrect.width : rect.width) + labelPad,
+              width: (yAxisMinWidth > arrLabelrect.width || yAxisMinWidth > rect.width ? yAxisMinWidth : arrLabelrect.width > rect.width ? arrLabelrect.width : rect.width) + labelPad,
               height: arrLabelrect.height > rect.height ? arrLabelrect.height : rect.height
             });
           } else {
@@ -24068,7 +24077,7 @@
             w.globals.resized = true;
             w.globals.dataChanged = true;
 
-            if (animate) {
+            if (animate && ch.series) {
               ch.series.getPreviousPaths();
             }
           }
@@ -24113,7 +24122,7 @@
         w.globals.shouldAnimate = animate;
         w.globals.dataChanged = true;
 
-        if (animate) {
+        if (animate && this.ctx.series) {
           this.ctx.series.getPreviousPaths();
         }
 
@@ -25774,10 +25783,10 @@
               }
 
               if (topParent != document) throw new Error('Element not in the dom');
-            } else {} // the element is NOT in the dom, throw error
-            // disabling the check below which fixes issue #76
-            // if (!document.documentElement.contains(element.node)) throw new Exception('Element not in the dom')
-            // find native bbox
+            } else {// the element is NOT in the dom, throw error
+              // disabling the check below which fixes issue #76
+              // if (!document.documentElement.contains(element.node)) throw new Exception('Element not in the dom')
+            } // find native bbox
 
 
             box = element.node.getBBox();
@@ -30665,7 +30674,11 @@
         var overwriteInitialSeries = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
         var me = this;
         me.w.globals.dataChanged = true;
-        me.series.getPreviousPaths();
+
+        if (me.series) {
+          me.series.getPreviousPaths();
+        }
+
         var newSeries = me.w.config.series.slice();
 
         for (var i = 0; i < newSeries.length; i++) {

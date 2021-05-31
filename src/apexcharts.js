@@ -457,7 +457,9 @@ export default class ApexCharts {
 
     me.w.globals.dataChanged = true
 
-    me.series.getPreviousPaths()
+    if (me.series) {
+      me.series.getPreviousPaths()
+    }
 
     let newSeries = me.w.config.series.slice()
 
